@@ -52,8 +52,6 @@ class MobiusTransformation(Scene):
         self.play(FadeOut(arrow), run_time=0.09)
         self.wait(0.1)
 
-
-
     def construct(self):
         # function g defined on C infity to C infinity
         tex = MathTex(r'\text{Let } g: \mathbb{C}_{\infty} \to \mathbb{C}_{\infty} \text{ be a Möbius transformation defined by } g(z) = \frac{z + i}{z + 1} \text{ where } z \in \mathbb{C}_{\infty}.', font_size=24)
@@ -163,25 +161,29 @@ class MobiusTransformation(Scene):
         D, label_D = self.place_point(complex_plane, -1j, r'\mathbf{D}', YELLOW, RIGHT)
 
         # place E at the end of the graph -1 -1
-        E, label_D = self.place_point(complex_plane, -1 - 3j, r'\mathbf{E}_{\infty}', GREEN, DOWN)
+        E, label_E = self.place_point(complex_plane, -1 - 3j, r'\mathbf{E}_{\infty}', GREEN, DOWN)
+
 
         # place E at the end of the graph 0 -3j
-        self.place_point(complex_plane, - 3j, r'\mathbf{E}_{\infty}', GREEN, DOWN)
+        E2, label_E2 = self.place_point(complex_plane, - 3j, r'\mathbf{E}_{\infty}', GREEN, DOWN)
 
         # create the path
         # line between A and B
         line_AB = Line(A.get_center(), B.get_center(), color=GREEN, stroke_width=3)
         self.travel_along_path(line_AB, color=GREEN)
+        self.bring_to_front(A, B)
 
         # Create the line
         # line between B and the end of the graph
         infinity_B = complex_plane.n2p(-1 - 5j)
         line_B_I = Line(start=B.get_center(), end=infinity_B , color=RED, stroke_width=3)
         self.travel_along_path(line_B_I, MAGENTA3)
+        self.bring_to_front(D, E)
 
         infinity_A = complex_plane.n2p(0 - 5j)
         line_I_A = Line(start=infinity_A, end=A.get_center(), color=YELLOW, stroke_width=3)
         self.travel_along_path(line_I_A, BLUE)
+        self.bring_to_front(E2, A, B)
 
         transformation = MathTex(
             r'using \ transformation \ g(z) = \frac{z + i}{z + 1}',
@@ -207,11 +209,53 @@ class MobiusTransformation(Scene):
         self.wait(0.5)
         D_prime, label_D_prime = self.transform_point(D, label_D, r'\mathbf{D}', second_plane, 0, UL)
         self.wait(0.5)
-        E_prime, label_E_prime = self.transform_point(E, label_D, r'\mathbf{E}', second_plane, -1j, UL)
+        E_prime, label_E_prime = self.transform_point(E, label_E, r'\mathbf{E}', second_plane, -1j, UL)
         self.wait(0.5)
         line_AC = self.draw_line_between_points(A_prime, C_prime, color=YELLOW)
         line_EC = self.draw_line_between_points(E_prime, C_prime, color=BLUE)
         self.wait(0.5)
         circle = self.create_circle_through_points(A_prime, C_prime, D_prime)
+        self.bring_to_front(A_prime, C_prime, D_prime, E_prime)
+
+        point_i = second_plane.n2p(1j)  # i
+        point_1 = second_plane.n2p(1)   # 1
+        point_neg_i = second_plane.n2p(-1j)  # -i
+
+        ## create the region for the second set g(D)
+        boundary_points = [
+            second_plane.n2p(-3 + 4j),  # Top-left corner
+            second_plane.n2p(-3 - 4j),  # Bottom-left corner
+            second_plane.n2p(0 - 1j),   # Top-right corner (near the circle)
+            second_plane.n2p(1 + 0j),   # Bottom-right corner (near the circle)
+        ]
+        region = Polygon(*boundary_points, color=BLUE, fill_opacity=1)
+
+        # Subtract the circle from the region
+        region = Difference(region, circle)
+
+        # Subtract the right side of the lines from the region
+        # We'll use a custom approach to clip the region
+        # Create a polygon to represent the right side of line1
+        right_side_line1 = Polygon(
+            point_i, point_1, second_plane.n2p(1 + 1j), second_plane.n2p(-1 + 1j), color=RED, fill_opacity=1
+        )
+        # Create a polygon to represent the right side of line2
+        right_side_line2 = Polygon(
+            point_neg_i, point_1, second_plane.n2p(1 - 1j), second_plane.n2p(-1 - 1j), color=RED, fill_opacity=1
+        )
+
+        # Subtract the right sides of the lines from the region
+        region = Difference(region, Union(right_side_line1, right_side_line2))
+        region.set_fill(PURPLE, opacity=0.4)  # Set intersection color
+        region.set_stroke(width=0)
+
+        self.play(Create(region))
+
+        label_gD = Text("g(D)", font_size=20, color=MAGENTA3)
+        label_gD.move_to(region.get_center() + 0.5 * UP)
+        self.play(Create(label_gD))
+        self.wait(0.5)
+
+
 
         self.wait(5)
