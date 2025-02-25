@@ -30,7 +30,7 @@ class MobiusTransformation(Scene):
         # Create the line between the two points
         # the line is long as the plane
         line = Line(point1.get_center(), point2.get_center(), color=color, stroke_width=3)
-        line.set_length(7)
+        line.set_length(6.5)
 
         # Animate if required
         self.play(Create(line))
@@ -39,8 +39,7 @@ class MobiusTransformation(Scene):
 
     def create_circle_through_points(self, point1, point2, point3, color=WHITE):
         # use the function from_three_points to get the circle
-        circle = Circle.from_three_points(point1.get_center(), point2.get_center(), point3.get_center())
-        circle.set_color(color)
+        circle = Circle.from_three_points(point1.get_center(), point2.get_center(), point3.get_center(), color=color)
         circle.set_stroke(width=3)
         self.play(Create(circle))
         return circle
@@ -54,16 +53,16 @@ class MobiusTransformation(Scene):
 
     def construct(self):
         # function g defined on C infity to C infinity
-        tex = MathTex(r'\text{Let } g: \mathbb{C}_{\infty} \to \mathbb{C}_{\infty} \text{ be a Möbius transformation defined by } g(z) = \frac{z + i}{z + 1} \text{ where } z \in \mathbb{C}_{\infty}.', font_size=24)
-        tex2 = MathTex(r'\text{D = } \{ z \in \mathbb{C} : -1 < Re_z < 0, Im_z < 0 \}', font_size=24)
-        tex2.next_to(tex, DOWN, buff=0.5)
-        self.play(Write(tex))
-        self.wait(0.5)
-        self.play(Write(tex2))
-        self.wait(0.5)
-        # move it to the top left corner
-        self.play(tex.animate.to_corner(UL), tex2.animate.to_corner(UL, buff=1))
-        self.wait(0.5)
+        # tex = MathTex(r'\text{Let } g: \mathbb{C}_{\infty} \to \mathbb{C}_{\infty} \text{ be a Möbius transformation defined by } g(z) = \frac{z + i}{z + 1} \text{ where } z \in \mathbb{C}_{\infty}.', font_size=24)
+        # tex2 = MathTex(r'\text{D = } \{ z \in \mathbb{C} : -1 < Re_z < 0, Im_z < 0 \}', font_size=24)
+        # tex2.next_to(tex, DOWN, buff=0.5)
+        # self.play(Write(tex))
+        # self.wait(0.5)
+        # self.play(Write(tex2))
+        # self.wait(0.5)
+        # # move it to the top left corner
+        # self.play(tex.animate.to_corner(UL), tex2.animate.to_corner(UL, buff=1))
+        # self.wait(0.5)
 
         # draw the complex plane
         complex_plane = ComplexPlane(
@@ -77,8 +76,8 @@ class MobiusTransformation(Scene):
             }
         ).add_coordinates()
         # before playing fade out the text
-        self.play(FadeOut(tex), FadeOut(tex2), Create(complex_plane))
-        # self.play(Create(complex_plane))
+        # self.play(FadeOut(tex), FadeOut(tex2), Create(complex_plane))
+        self.play(Create(complex_plane))
         self.wait(0.5)
 
         # Define the width and height of the screen
@@ -161,11 +160,11 @@ class MobiusTransformation(Scene):
         D, label_D = self.place_point(complex_plane, -1j, r'\mathbf{D}', YELLOW, RIGHT)
 
         # place E at the end of the graph -1 -1
-        E, label_E = self.place_point(complex_plane, -1 - 3j, r'\mathbf{E}_{\infty}', GREEN, DOWN)
+        E, label_E = self.place_point(complex_plane, -1 - 3j, r'\mathbf{E}_{\infty}', ORANGE, DOWN)
 
 
         # place E at the end of the graph 0 -3j
-        E2, label_E2 = self.place_point(complex_plane, - 3j, r'\mathbf{E}_{\infty}', GREEN, DOWN)
+        E2, label_E2 = self.place_point(complex_plane, - 3j, r'\mathbf{E}_{\infty}', ORANGE, DOWN)
 
         # create the path
         # line between A and B
@@ -194,29 +193,33 @@ class MobiusTransformation(Scene):
         transformation.move_to(ORIGIN)
         transformation.shift(UP * 3)
 
-        # # Create the text on screen
-        # self.play(Write(transformation))
-        self.wait(5)
+        # Create the text on screen
+        self.play(Write(transformation))
+        self.wait(2.5)
         #
         # # move each point to the second complex plane
         # # after transformation A will be  A' at 1 0
         # # Copy the point and move it to (1, 0) on the right plane
-        A_prime, label_A_prime = self.transform_point(A, label_A, r'\mathbf{A}', second_plane, 0 + 1j, UR)
-        self.wait(0.5)
-        B_prime, label_B_prime = self.transform_point(B, label_B, r'\mathbf{B}', second_plane, -3 - 3j, UP)
-        self.wait(0.5)
-        C_prime, label_C_prime = self.transform_point(C, label_C, r'\mathbf{C}', second_plane, 1, UP)
-        self.wait(0.5)
-        D_prime, label_D_prime = self.transform_point(D, label_D, r'\mathbf{D}', second_plane, 0, UL)
-        self.wait(0.5)
-        E_prime, label_E_prime = self.transform_point(E, label_E, r'\mathbf{E}', second_plane, -1j, UL)
-        self.wait(0.5)
-        line_AC = self.draw_line_between_points(A_prime, C_prime, color=YELLOW)
-        line_EC = self.draw_line_between_points(E_prime, C_prime, color=BLUE)
-        self.wait(0.5)
-        circle = self.create_circle_through_points(A_prime, C_prime, D_prime)
-        self.bring_to_front(A_prime, C_prime, D_prime, E_prime)
+        A_prime, label_A_prime = self.transform_point(A, label_A, r'\mathbf{A}\textquotesingle', second_plane, 0 + 1j, UR)
+        self.wait(0.4)
+        B_prime, label_B_prime = self.transform_point(B, label_B, r'\mathbf{B}\textquotesingle_{\infty}', second_plane, -2 - 3j, UP)
+        self.wait(0.4)
+        C_prime, label_C_prime = self.transform_point(C, label_C, r'\mathbf{C}\textquotesingle', second_plane, -1j, UP)
+        self.wait(0.4)
+        D_prime, label_D_prime = self.transform_point(D, label_D, r'\mathbf{D}\textquotesingle', second_plane, 0, UL)
+        self.wait(0.4)
+        E_prime, label_E_prime = self.transform_point(E, label_E, r'\mathbf{E}\textquotesingle', second_plane, 1, RIGHT)
+        self.wait(0.4)
+        line_AE = self.draw_line_between_points(A_prime, E_prime, color=GREEN)
+        line_EC = self.draw_line_between_points(E_prime, C_prime, color=RED)
+        self.wait(0.4)
 
+        B_prime1, label_B_prime1 = self.transform_point(B, label_B, r'\mathbf{B}\textquotesingle_{\infty}', second_plane, -2 + 3j, UP)
+        self.wait(0.3)
+        circle = self.create_circle_through_points(A_prime, E_prime, D_prime, YELLOW)
+        self.bring_to_front(A_prime, C_prime, D_prime, E_prime, B_prime, B_prime1)
+
+        #
         point_i = second_plane.n2p(1j)  # i
         point_1 = second_plane.n2p(1)   # 1
         point_neg_i = second_plane.n2p(-1j)  # -i
@@ -256,6 +259,19 @@ class MobiusTransformation(Scene):
         self.play(Create(label_gD))
         self.wait(0.5)
 
+        # the following code is just experimental ( coming soon )
+        # path = VMobject()
+        # points_for_path = [
+        #     B_prime1.get_center(), A_prime.get_center(), D_prime.get_center(), E_prime.get_center(), C_prime.get_center(), B_prime.get_center()
+        # ]
+        # path.set_points_smoothly(points_for_path)
+        #
+        # # Create an arrow
+        # arrow = Arrow(start=path.get_start(), end=path.get_start() + RIGHT, color=YELLOW, buff=0, max_stroke_width_to_length_ratio=0, max_tip_length_to_length_ratio=0.4, tip_length=0.2)
+        # self.play(Create(arrow))
+        #
+        # # Animate the arrow along the path
+        # self.play(MoveAlongPath(arrow, path), rate_func=linear, run_time=5)
 
 
         self.wait(5)
