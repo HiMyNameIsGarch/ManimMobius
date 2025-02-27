@@ -1,7 +1,16 @@
 from manim import *
+from manim.utils.color.SVGNAMES import DARKBLUE
 from manim.utils.color.X11 import MAGENTA3
 
 class MobiusTransformation(Scene):
+    def g(self, z): # the main function (Mobius transformation)
+        if abs(z) == float('inf'):
+            return 1 + 0j
+        try:
+            return (z + 1j) / (z + 1)
+        except ZeroDivisionError:
+            return float('inf')
+
     def place_point(self, plane, point, text, color, pos):
         dot = Dot().move_to(plane.n2p(point))
         dot.set_color(color)
@@ -44,57 +53,72 @@ class MobiusTransformation(Scene):
         self.play(Create(circle))
         return circle
 
-    def travel_along_path(self, path, color=WHITE):
-        arrow = Arrow(start=path.start, end=path.end, color=color, buff=0, max_stroke_width_to_length_ratio=0, max_tip_length_to_length_ratio=0.4, tip_length=0.2)
+    def travel_along_path(self, path):
+        arrow = Arrow(start=path.start, end=path.end, color=DARKBLUE, buff=0, max_stroke_width_to_length_ratio=0, max_tip_length_to_length_ratio=0.4, tip_length=0.2)
         arrow.shift((path.end - path.start) * (-1))
+        self.bring_to_front(arrow)
         self.play(Create(path), arrow.animate.shift(path.end- path.start), run_time=1.5)
         self.play(FadeOut(arrow), run_time=0.09)
         self.wait(0.1)
 
     def construct(self):
         # function g defined on C infity to C infinity
-        # tex = MathTex(r'\text{Let } g: \mathbb{C}_{\infty} \to \mathbb{C}_{\infty} \text{ be a Möbius transformation defined by } g(z) = \frac{z + i}{z + 1} \text{ where } z \in \mathbb{C}_{\infty}.', font_size=24)
-        # tex2 = MathTex(r'\text{D = } \{ z \in \mathbb{C} : -1 < Re_z < 0, Im_z < 0 \}', font_size=24)
-        # tex2.next_to(tex, DOWN, buff=0.5)
-        # self.play(Write(tex))
-        # self.wait(0.5)
-        # self.play(Write(tex2))
-        # self.wait(0.5)
-        # # move it to the top left corner
-        # self.play(tex.animate.to_corner(UL), tex2.animate.to_corner(UL, buff=1))
-        # self.wait(0.5)
+        tex = MathTex(r'\text{Let } g: \mathbb{C}_{\infty} \to \mathbb{C}_{\infty} \text{ be a Möbius transformation defined by } g(z) = \frac{z + i}{z + 1} \text{ where } z \in \mathbb{C}_{\infty}.', font_size=24)
+        tex2 = MathTex(r'\text{D = } \{ z \in \mathbb{C} : -1 < Re_z < 0, Im_z < 0 \}', font_size=24)
+        tex2.next_to(tex, DOWN, buff=0.5)
+        self.play(Write(tex))
+        self.wait(0.5)
+        self.play(Write(tex2))
+        self.wait(0.5)
+        # move it to the top left corner
+        self.play(tex.animate.to_corner(UL), tex2.animate.to_corner(UL, buff=1))
+        self.wait(0.5)
 
         # draw the complex plane
+        x_range = [-3, 3]
+        y_range = [-3, 3]
         complex_plane = ComplexPlane(
-            x_range=[-3, 3],  # Define the x-range
-            y_range=[-3, 3],  # Define the y-range
+            x_range=x_range,
+            y_range=y_range,
             background_line_style = {
-                "stroke_width": 0.5
+                "stroke_width": 0.4
             },
             axis_config = {
-                "stroke_width": 0.5
+                "stroke_width": 0.4
             }
         ).add_coordinates()
         # before playing fade out the text
-        # self.play(FadeOut(tex), FadeOut(tex2), Create(complex_plane))
-        self.play(Create(complex_plane))
+        self.play(FadeOut(tex), FadeOut(tex2), Create(complex_plane))
+        # self.play(Create(complex_plane))
         self.wait(0.5)
 
-        # Define the width and height of the screen
-        width = config.frame_width
-        height = config.frame_height
+                # Compute dimensions based on the complex plane's ranges
+        x_min, x_max = x_range
+        y_min, y_max = y_range
+
+        # Width and height of the real_region (vertical strip: -1 < Re(z) < 0)
+        real_region_width = 1  # From x = -1 to x = 0
+        real_region_height = y_max - y_min  # Full height of the plane
+
+        # Width and height of the lower_half_plane (Im(z) < 0)
+        lower_half_plane_width = x_max - x_min  # Full width of the plane
+        lower_half_plane_height = (0 - y_min)  # From y = -3 to y = 0
 
         # Define the vertical strip region: -1 < Re(z) < 0
+        center_real_region = -abs(real_region_width)/2
         real_region = Rectangle(
-            width=1, height=height,  # Height covers full plane
+            width=real_region_width,
+            height=real_region_height,
             color=RED, fill_opacity=0.2, stroke_width=0
-        ).move_to(complex_plane.get_center() + 0.5 * LEFT)  # Shift left
+        ).move_to(complex_plane.c2p(center_real_region, 0))  # Center at x = -0.5, y = 0
 
         # Define the lower half-plane: Im(z) < 0
+        center_img_region = -abs(lower_half_plane_height)/2
         lower_half_plane = Rectangle(
-            width=width, height=height / 2,
+            width=lower_half_plane_width,
+            height=lower_half_plane_height,
             color=BLUE, fill_opacity=0.2, stroke_width=0
-        ).shift(DOWN * height / 4)  # Shift down
+        ).move_to(complex_plane.c2p(0, center_img_region))  # Center at x = 0, y = -1.5
 
         # Create the intersection region
         intersection_region = Intersection(real_region, lower_half_plane, stroke_width=0)
@@ -162,26 +186,28 @@ class MobiusTransformation(Scene):
         # place E at the end of the graph -1 -1
         E, label_E = self.place_point(complex_plane, -1 - 3j, r'\mathbf{E}_{\infty}', ORANGE, DOWN)
 
-
         # place E at the end of the graph 0 -3j
         E2, label_E2 = self.place_point(complex_plane, - 3j, r'\mathbf{E}_{\infty}', ORANGE, DOWN)
 
         # create the path
         # line between A and B
         line_AB = Line(A.get_center(), B.get_center(), color=GREEN, stroke_width=3)
-        self.travel_along_path(line_AB, color=GREEN)
+        self.bring_to_back(line_AB)
+        self.travel_along_path(line_AB)
         self.bring_to_front(A, B)
 
         # Create the line
         # line between B and the end of the graph
         infinity_B = complex_plane.n2p(-1 - 5j)
         line_B_I = Line(start=B.get_center(), end=infinity_B , color=RED, stroke_width=3)
-        self.travel_along_path(line_B_I, MAGENTA3)
+        self.bring_to_back(line_B_I)
+        self.travel_along_path(line_B_I)
         self.bring_to_front(D, E)
 
         infinity_A = complex_plane.n2p(0 - 5j)
         line_I_A = Line(start=infinity_A, end=A.get_center(), color=YELLOW, stroke_width=3)
-        self.travel_along_path(line_I_A, BLUE)
+        self.bring_to_back(line_I_A)
+        self.travel_along_path(line_I_A)
         self.bring_to_front(E2, A, B)
 
         transformation = MathTex(
@@ -191,7 +217,7 @@ class MobiusTransformation(Scene):
 
         # Position the text at the center of the screen
         transformation.move_to(ORIGIN)
-        transformation.shift(UP * 3)
+        transformation.shift(UP * 3.3)
 
         # Create the text on screen
         self.play(Write(transformation))
@@ -252,26 +278,45 @@ class MobiusTransformation(Scene):
         region.set_fill(PURPLE, opacity=0.4)  # Set intersection color
         region.set_stroke(width=0)
 
-        self.play(Create(region))
+        self.play(Create(region), run_time=1.5)
 
         label_gD = Text("g(D)", font_size=20, color=MAGENTA3)
         label_gD.move_to(region.get_center() + 0.5 * UP)
         self.play(Create(label_gD))
         self.wait(0.5)
 
-        # the following code is just experimental ( coming soon )
-        # path = VMobject()
-        # points_for_path = [
-        #     B_prime1.get_center(), A_prime.get_center(), D_prime.get_center(), E_prime.get_center(), C_prime.get_center(), B_prime.get_center()
-        # ]
-        # path.set_points_smoothly(points_for_path)
-        #
-        # # Create an arrow
-        # arrow = Arrow(start=path.get_start(), end=path.get_start() + RIGHT, color=YELLOW, buff=0, max_stroke_width_to_length_ratio=0, max_tip_length_to_length_ratio=0.4, tip_length=0.2)
-        # self.play(Create(arrow))
-        #
-        # # Animate the arrow along the path
-        # self.play(MoveAlongPath(arrow, path), rate_func=linear, run_time=5)
+        # Define the path
+        path = VMobject()
+        path.append_points(Line(start=A_prime, end=B_prime1).points)
 
+        half_circle = Arc(
+            radius=np.sqrt(2) / 2,
+            start_angle=135 * DEGREES,
+            angle=180 * DEGREES,
+            arc_center=second_plane.n2p(0.5 + 0.5j),
+        ).reverse_points()
+
+        path.append_points(Line(start=B_prime, end=E_prime).points)
+        path.append_points(half_circle.points)
+                # Create a very short arrow, so only the tip is visible
+        arrow = ArrowTriangleFilledTip(color=DARKBLUE, fill_opacity=1).scale(0.7)
+        # Place the arrow at the start of the path
+        arrow.move_to(path.get_start())
+
+        old_arrow = arrow.copy()
+        old_path = VMobject()
+        old_path.append_points(line_AB.points)
+        old_path.append_points(line_B_I.points)
+        old_path.append_points(line_I_A.points)
+
+        old_arrow.move_to(old_path.get_start())
+        # Animate the arrow along the path
+        self.play(Create(old_arrow), Create(arrow), run_time=0.1)
+        for _ in range(6):
+            self.play(MoveAlongPath(old_arrow, old_path),MoveAlongPath(arrow, path), rate_func=linear, run_time=6)
+
+        # Fade out the arrow at the end
+        self.play(FadeOut(arrow, old_arrow), run_time=0.09)
 
         self.wait(5)
+
