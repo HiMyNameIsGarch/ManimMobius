@@ -39,3 +39,5 @@ I am thinking to get the transformation functions from the user and also the reg
 - [Mobius Transformation](https://en.wikipedia.org/wiki/M%C3%B6bius_transformation)
 - [Official Manim Repository](https://github.com/3b1b/manim)
 - [Manim Community Repository](https://github.com/ManimCommunity/manim)
+
+The Manim Community Developers. (2025). Manim – Mathematical Animation Framework (Version v0.19.0) [Computer software]. https://www.manim.community/
