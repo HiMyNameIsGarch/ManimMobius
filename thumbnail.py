@@ -12,7 +12,7 @@ class MobiusThumbnail(Scene):
             x_range=[-3, 3, 1],
             y_range=[-3, 3, 1],
             background_line_style={
-                "stroke_color": TEAL,
+                "stroke_color": "#4B0082",  # Indigo for grid lines
                 "stroke_width": 1.7,
                 "stroke_opacity": 0.5
             },
@@ -32,7 +32,7 @@ class MobiusThumbnail(Scene):
             x_range=[-4, 4, 1],
             y_range=[-4, 4, 1],
             background_line_style={
-                "stroke_color": TEAL,
+                "stroke_color": "#6A5ACD",  # Slate blue for transformed grid lines
                 "stroke_width": 1.7,
                 "stroke_opacity": 0.5
             },
@@ -54,14 +54,13 @@ class MobiusThumbnail(Scene):
 
         # Add the title "Portals at Infinity" with gradient colors for each letter
         title = Text("Portals at Infinity", font_size=40)
-        title.set_color_by_gradient(RUSTORANGE, RUSTBROWN)
+        title.set_color_by_gradient("#00FFFF", "#FF00FF")  # Cyan to Magenta gradient
         title.to_edge(UP)
 
         # Add a subtitle with gradient colors for each letter
         subtitle = Text("Exploring Möbius Transformations in 2D", font_size=24)
-        subtitle.set_color_by_gradient(TEALBLUE, SLATEBLUE)
+        subtitle.set_color_by_gradient("#4B0082", "#6A5ACD")  # Indigo to Slate blue gradient
         subtitle.next_to(title, DOWN)
 
         # Add all elements to the scene
         self.add(original_grid, transformed_grid, title, subtitle)
-
